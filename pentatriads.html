@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pentatonic Triad Map</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#111318;--surface:#181b22;--surface2:#1e2229;--border:#2a2f3a;--border2:#353c4a;--ink:#e8eaf0;--muted:#6b7280;--muted2:#3a4050;--root-bg:#e8d87a;--root-fg:#111318;--penta-bg:#1e2840;--penta-fg:#8aa0c8;--penta-bc:#3a5070;--ext-fg:#2e3548;--ext-bc:#252c3a;--c0:#e05c5c;--c1:#aaaaaa;--c2:#5c9de0;--c3:#5cc08a;--c4:#e0a05c;--c5:#b05ce0;--c6:#5cd4e0;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink);font-family:'DM Mono',monospace;min-height:100vh;padding:22px 16px 60px;}
+header{margin-bottom:20px;}
+h1{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(1.4rem,3vw,2rem);letter-spacing:-0.01em;color:var(--ink);line-height:1;margin-bottom:3px;}
+.sub{font-size:0.6rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;}
+.controls{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px;align-items:flex-end;border-bottom:1px solid var(--border);padding-bottom:14px;}
+.cg{display:flex;flex-direction:column;gap:4px;}
+.cg label{font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;}
+select{background:var(--surface);border:1px solid var(--border2);color:var(--ink);font-family:'DM Mono',monospace;font-size:.76rem;padding:5px 26px 5px 9px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M0 0l4.5 5 4.5-5z' fill='%236b7280'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
+select:focus{outline:none;}
+.trow{display:flex;}
+.tbtn{background:var(--surface);border:1px solid var(--border2);border-right:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:.7rem;padding:5px 12px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.tbtn:last-child{border-right:1px solid var(--border2);}
+.tbtn.on{background:var(--surface2);color:var(--ink);}
+.tbtn:hover{color:var(--ink);}
+.cfbar{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px;align-items:center;}
+.cfl{font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-right:2px;align-self:center;flex-shrink:0;}
+.cfp{font-size:.66rem;padding:3px 10px 3px 8px;border:1.5px solid;border-radius:20px;cursor:pointer;transition:all .15s;user-select:none;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:4px;opacity:.3;background:transparent;}
+.cfp.on{opacity:1;}
+.cfp:hover{opacity:.65;}
+.cfp.on:hover{opacity:1;}
+.cfd{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.cfg{font-size:.54rem;opacity:.7;}
+/* per-pill chord type selector */
+.cfp-wrap{display:flex;align-items:center;gap:3px;}
+.cfp-sel{background:transparent;border:none;color:inherit;font-family:'DM Mono',monospace;font-size:.58rem;cursor:pointer;padding:1px 2px;appearance:none;opacity:.7;outline:none;min-width:0;max-width:56px;text-overflow:ellipsis;}
+.cfp.on .cfp-sel{opacity:1;}
+.cfp-sel:hover{opacity:1;}
+.page-body{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;}
+.shapes-grid{display:flex;gap:14px;flex-wrap:wrap;flex:1;min-width:0;}
+.card{background:var(--surface);border:1px solid var(--border);padding:11px 11px 13px;flex-shrink:0;}
+.ch{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+.ct{font-family:'Playfair Display',serif;font-weight:700;font-size:.9rem;color:var(--ink);}
+.cp{font-size:.58rem;color:var(--muted);}
+.fbw{display:flex;}
+.fn{display:flex;flex-direction:column;padding-top:19px;margin-right:4px;flex-shrink:0;}
+.fi{height:36px;display:flex;align-items:center;justify-content:flex-end;font-size:.53rem;color:var(--muted2);width:17px;line-height:1;}
+.fb{display:flex;position:relative;}
+.sc{display:flex;flex-direction:column;align-items:center;width:38px;flex-shrink:0;}
+.sn{font-size:.58rem;color:var(--muted);height:19px;display:flex;align-items:center;font-style:italic;}
+.fc{width:38px;height:36px;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;}
+.fc::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:var(--border);}
+.fc.nut::before{height:2px;background:#505060;}
+.fc::after{content:'';position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--border2);transform:translateX(-50%);}
+.dot{width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.54rem;font-weight:500;position:relative;z-index:2;border:1.5px solid transparent;transition:transform .1s;cursor:default;line-height:1;text-align:center;user-select:none;}
+.dot:hover{transform:scale(1.2);z-index:10;}
+.dot.root{background:var(--root-bg);color:var(--root-fg);border-color:var(--root-bg);font-weight:700;}
+.dot.penta{background:var(--penta-bg);color:var(--penta-fg);border-color:var(--penta-bc);}
+.dot.ext{background:transparent;color:var(--ext-fg);border-color:var(--ext-bc);border-style:dashed;}
+.legend{background:var(--surface);border:1px solid var(--border);padding:13px;min-width:175px;flex-shrink:0;font-size:.66rem;}
+.lt{font-family:'Playfair Display',serif;font-weight:700;font-size:.82rem;margin-bottom:9px;color:var(--ink);}
+.lsep{height:1px;background:var(--border);margin:9px 0;}
+.li{display:flex;align-items:center;gap:7px;margin-bottom:6px;}
+.lsw{width:16px;height:16px;border-radius:50%;flex-shrink:0;border:1.5px solid;}
+.lnote{font-size:.58rem;color:var(--muted);line-height:1.7;margin-top:4px;}
+@media(max-width:480px){.sc{width:34px;}.fc{width:34px;height:34px;}.dot{width:22px;height:22px;font-size:.5rem;}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Pentatonic Triad Map</h1>
+  <p class="sub">5 Box-Shapes · Alle 7 diatonischen Akkorde · ADG · DGB · GBe</p>
+</header>
+<div class="controls">
+  <div class="cg"><label>Grundton</label>
+    <select id="rootSel">
+      <option value="0">C</option><option value="1">C♯/D♭</option><option value="2">D</option>
+      <option value="3">D♯/E♭</option><option value="4">E</option><option value="5">F</option>
+      <option value="6">F♯/G♭</option><option value="7">G</option><option value="8">G♯/A♭</option>
+      <option value="9" selected>A</option><option value="10">A♯/B♭</option><option value="11">B/H</option>
+    </select>
+  </div>
+  <div class="cg"><label>Tongeschlecht</label>
+    <div class="trow">
+      <button class="tbtn on" id="minBtn" onclick="setMode('minor')">Moll</button>
+      <button class="tbtn" id="majBtn" onclick="setMode('major')">Dur</button>
+    </div>
+  </div>
+  <div class="cg"><label>Label</label>
+    <div class="trow">
+      <button class="tbtn on" id="noteBtn" onclick="setLabel('note')">Note</button>
+      <button class="tbtn" id="ivBtn" onclick="setLabel('iv')">Intervall</button>
+    </div>
+  </div>
+  <div class="cg"><label>String-Sets</label>
+    <div class="trow">
+      <button class="tbtn on" id="tsADG" onclick="toggleSet('ADG')">ADG</button>
+      <button class="tbtn on" id="tsDGB" onclick="toggleSet('DGB')">DGB</button>
+      <button class="tbtn on" id="tsGBe" onclick="toggleSet('GBe')">GBe</button>
+    </div>
+  </div>
+  <div class="cg"><label>Skalen-Töne</label>
+    <div class="trow">
+      <button class="tbtn on" id="extBtn" onclick="toggleExt()">+ Skala</button>
+    </div>
+  </div>
+</div>
+<div class="cfbar" id="filterBar"></div>
+<div class="page-body">
+  <div class="shapes-grid" id="grid"></div>
+  <div class="legend" id="legend"></div>
+</div>
+<script>
+const SH=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+const FL=['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
+const FLAT_R=new Set([1,3,5,8,10]);
+function nn(semi,root){const s=((semi%12)+12)%12;return(FLAT_R.has(((root%12)+12)%12)?FL:SH)[s];}
+const OPEN=[4,9,2,7,11,4];
+const SNAMES=['E','A','D','G','B','e'];
+const SCALE={minor:[0,2,3,5,7,8,10],major:[0,2,4,5,7,9,11]};
+const PENTA={minor:[0,3,5,7,10],major:[0,2,4,7,9]};
+const IVNAME={minor:{0:'1',2:'2',3:'b3',5:'4',7:'5',8:'b6',10:'b7'},major:{0:'1',2:'2',4:'3',5:'4',7:'5',9:'6',11:'7'}};
+const TRIADS={
+  minor:[
+    {rootIv:0,ivs:[0,3,7],deg:'i',suf:'m',col:0},
+    {rootIv:2,ivs:[2,5,8],deg:'ii°',suf:'dim',col:1},
+    {rootIv:3,ivs:[3,7,10],deg:'III',suf:'',col:2},
+    {rootIv:5,ivs:[5,8,0],deg:'iv',suf:'m',col:3},
+    {rootIv:7,ivs:[7,10,2],deg:'v',suf:'m',col:4},
+    {rootIv:8,ivs:[8,0,3],deg:'VI',suf:'',col:5},
+    {rootIv:10,ivs:[10,2,5],deg:'VII',suf:'',col:6},
+  ],
+  major:[
+    {rootIv:0,ivs:[0,4,7],deg:'I',suf:'',col:0},
+    {rootIv:2,ivs:[2,5,9],deg:'ii',suf:'m',col:1},
+    {rootIv:4,ivs:[4,7,11],deg:'iii',suf:'m',col:2},
+    {rootIv:5,ivs:[5,9,0],deg:'IV',suf:'',col:3},
+    {rootIv:7,ivs:[7,11,2],deg:'V',suf:'',col:4},
+    {rootIv:9,ivs:[9,0,4],deg:'vi',suf:'m',col:5},
+    {rootIv:11,ivs:[11,2,5],deg:'vii°',suf:'dim',col:6},
+  ]
+};
+const CHEX=['#e05c5c','#aaaaaa','#5c9de0','#5cc08a','#e0a05c','#b05ce0','#5cd4e0'];
+const SETS={ADG:[1,2,3],DGB:[2,3,4],GBe:[3,4,5]};
+const SH_MINOR=[
+  {name:'Shape 1',tag:'I',notes:[{s:0,f:0,iv:0,p:1},{s:0,f:3,iv:3,p:1},{s:1,f:0,iv:5,p:1},{s:1,f:2,iv:7,p:1},{s:2,f:0,iv:10,p:1},{s:2,f:2,iv:0,p:1},{s:3,f:0,iv:3,p:1},{s:3,f:2,iv:5,p:1},{s:4,f:0,iv:7,p:1},{s:4,f:3,iv:10,p:1},{s:5,f:0,iv:0,p:1},{s:5,f:3,iv:3,p:1}]},
+  {name:'Shape 2',tag:'II',notes:[{s:0,f:3,iv:3,p:1},{s:0,f:5,iv:5,p:1},{s:1,f:2,iv:7,p:1},{s:1,f:5,iv:10,p:1},{s:2,f:2,iv:0,p:1},{s:2,f:5,iv:3,p:1},{s:3,f:2,iv:5,p:1},{s:3,f:4,iv:7,p:1},{s:4,f:3,iv:10,p:1},{s:4,f:5,iv:0,p:1},{s:5,f:3,iv:3,p:1},{s:5,f:5,iv:5,p:1}]},
+  {name:'Shape 3',tag:'III',notes:[{s:0,f:5,iv:5,p:1},{s:0,f:7,iv:7,p:1},{s:1,f:5,iv:10,p:1},{s:1,f:7,iv:0,p:1},{s:2,f:4,iv:2,p:0},{s:2,f:7,iv:5,p:1},{s:3,f:4,iv:7,p:1},{s:3,f:7,iv:10,p:1},{s:4,f:5,iv:0,p:1},{s:4,f:8,iv:3,p:1},{s:5,f:5,iv:5,p:1},{s:5,f:7,iv:7,p:1}]},
+  {name:'Shape 4',tag:'IV',notes:[{s:0,f:7,iv:7,p:1},{s:0,f:10,iv:10,p:1},{s:1,f:7,iv:0,p:1},{s:1,f:9,iv:2,p:0},{s:2,f:7,iv:5,p:1},{s:2,f:9,iv:7,p:1},{s:3,f:7,iv:10,p:1},{s:3,f:9,iv:0,p:1},{s:4,f:8,iv:3,p:1},{s:4,f:10,iv:5,p:1},{s:5,f:7,iv:7,p:1},{s:5,f:10,iv:10,p:1}]},
+  {name:'Shape 5',tag:'V',notes:[{s:0,f:10,iv:10,p:1},{s:0,f:12,iv:0,p:1},{s:1,f:10,iv:3,p:1},{s:1,f:12,iv:5,p:1},{s:2,f:9,iv:7,p:1},{s:2,f:12,iv:10,p:1},{s:3,f:9,iv:0,p:1},{s:3,f:11,iv:2,p:0},{s:4,f:10,iv:5,p:1},{s:4,f:12,iv:7,p:1},{s:5,f:10,iv:10,p:1},{s:5,f:12,iv:0,p:1}]},
+];
+// Dur uses identical physical shapes — only the root (and thus interval labels) differs.
+// For major mode, ROOT is the major tonic. Its relative minor is ROOT-3 (mod 12).
+// We shift rfe by +3 so the shapes anchor on the relative minor root fret,
+// which keeps the same physical finger patterns on the neck.
+const SH_MAJOR=SH_MINOR;
+let ROOT=9,MODE='minor',LABEL='note',SHOW_EXT=true;
+let ACT_SETS=new Set(['ADG','DGB','GBe']);
+let ACT_CHORDS=new Set();
+// Per-chord type: index matches TRIADS[MODE] index. Reset on mode/root change.
+let CHORD_TYPES=Array(7).fill('triad');
+
+function setMode(m){MODE=m;document.getElementById('minBtn').classList.toggle('on',m==='minor');document.getElementById('majBtn').classList.toggle('on',m==='major');ACT_CHORDS=new Set();CHORD_TYPES=Array(7).fill('triad');buildFilterBar();render();}
+function setLabel(l){LABEL=l;document.getElementById('noteBtn').classList.toggle('on',l==='note');document.getElementById('ivBtn').classList.toggle('on',l==='iv');render();}
+function toggleSet(n){ACT_SETS.has(n)?ACT_SETS.delete(n):ACT_SETS.add(n);document.getElementById('ts'+n).classList.toggle('on',ACT_SETS.has(n));updatePillSelects();render();}
+function toggleExt(){SHOW_EXT=!SHOW_EXT;const b=document.getElementById('extBtn');b.textContent=SHOW_EXT?'+ Skala':'– Skala';b.classList.toggle('on',SHOW_EXT);render();}
+function setChordType(i,v){CHORD_TYPES[i]=v;render();}
+function toggleChord(i){ACT_CHORDS.has(i)?ACT_CHORDS.delete(i):ACT_CHORDS.add(i);document.querySelectorAll('.cfp')[i].classList.toggle('on',ACT_CHORDS.has(i));render();}
+document.getElementById('rootSel').addEventListener('change',e=>{ROOT=parseInt(e.target.value);ACT_CHORDS=new Set();CHORD_TYPES=Array(7).fill('triad');buildFilterBar();render();});
+
+// Update disabled state on all pill selects when set count changes
+function updatePillSelects(){
+  const n=ACT_SETS.size;
+  document.querySelectorAll('.cfp-sel').forEach((sel,i)=>{
+    sel.querySelectorAll('option').forEach(o=>{
+      if(o.dataset.need==='2') o.disabled=n<2;
+      if(o.dataset.need==='3') o.disabled=n<3;
+    });
+    if(sel.options[sel.selectedIndex]?.disabled){
+      sel.value='triad'; CHORD_TYPES[i]='triad';
+    }
+  });
+}
+
+function chordTypeOptions(i){
+  const n=ACT_SETS.size;
+  const cur=CHORD_TYPES[i]||'triad';
+  const opts=[
+    {v:'triad', label:'Triad'},
+    {v:'sus2',  label:'sus2'},
+    {v:'sus4',  label:'sus4'},
+    {v:'7no5',  label:'7 (no5)'},
+    {v:'7',     label:'7',     need:2},
+    {v:'add9',  label:'add9',  need:2},
+    {v:'9',     label:'9',     need:3},
+  ];
+  return opts.map(o=>{
+    const dis=(o.need===2&&n<2)||(o.need===3&&n<3);
+    return `<option value="${o.v}"${cur===o.v?' selected':''}${dis?' disabled':''}${o.need?` data-need="${o.need}"`:''}>${o.label}</option>`;
+  }).join('');
+}
+
+// Returns chord-tone intervals (from mode root) for a given triad + per-chord type.
+function getChordIvs(triad, type){
+  const r=triad.rootIv;
+  function abs(rel){return((r+rel)%12+12)%12;}
+  const relIvs=triad.ivs.map(ci=>((ci-r)%12+12)%12).sort((a,b)=>a-b);
+  const isMinor=relIvs.includes(3)&&relIvs.includes(7);
+  const isMajor=relIvs.includes(4)&&relIvs.includes(7);
+  const isDim  =relIvs.includes(3)&&relIvs.includes(6);
+  // 7th interval: maj7 for major chords, min7 for minor/dim
+  const sev=isMajor?11:10;
+  // 3rd interval from chord root
+  const third=isMinor||isDim?3:4;
+  // 5th (dim uses 6)
+  const fifth=isDim?6:7;
+  switch(type){
+    case 'triad':  return triad.ivs;
+    case 'sus2':   return [abs(0),abs(2),abs(7)];
+    case 'sus4':   return [abs(0),abs(5),abs(7)];
+    case '7no5':   return [abs(0),abs(third),abs(sev)];
+    case '7':      return [abs(0),abs(third),abs(fifth),abs(sev)];
+    case 'add9':   return [abs(0),abs(third),abs(fifth),abs(2)];
+    case '9':      return [abs(0),abs(third),abs(fifth),abs(sev),abs(2)];
+    default:       return triad.ivs;
+  }
+}
+
+function chordStrings(type){
+  if(type==='9')    return 5;
+  if(['7','add9'].includes(type)) return 4;
+  return 3;
+}
+
+// Build combined string array from active sets for extended voicings.
+// For 4-note chords use pairs of adjacent sets, for 5-note use triples.
+function getExtendedStrArrays(type){
+  const setOrder=['ADG','DGB','GBe'];
+  const active=setOrder.filter(s=>ACT_SETS.has(s));
+  const need=chordStrings(type);
+  if(need<=3) return Object.entries(SETS).filter(([k])=>ACT_SETS.has(k)).map(([,v])=>v);
+  if(need===4){
+    // Adjacent pair of sets → 4 unique strings
+    const pairs=[];
+    for(let i=0;i<active.length-1;i++){
+      const merged=[...new Set([...SETS[active[i]],...SETS[active[i+1]]])].sort((a,b)=>a-b);
+      if(merged.length>=4) pairs.push(merged);
+    }
+    return pairs;
+  }
+  if(need>=5){
+    // Triple of adjacent sets → 5-6 unique strings
+    const triples=[];
+    for(let i=0;i<active.length-2;i++){
+      const merged=[...new Set([...SETS[active[i]],...SETS[active[i+1]],...SETS[active[i+2]]])].sort((a,b)=>a-b);
+      if(merged.length>=5) triples.push(merged);
+    }
+    return triples;
+  }
+  return [];
+}
+// Generic voicing finder for N chord tones across N strings (N >= 3).
+// strArr must have >= chordIvs.length strings.
+function findVoicings(chordIvs,strArr,fMin,fMax){
+  const tones=new Set(chordIvs.map(i=>((ROOT+i)%12+12)%12));
+  const opts=strArr.map(s=>{const r=[];for(let f=fMin-1;f<=fMax+2;f++){const p=((OPEN[s]+f)%12+12)%12;if(tones.has(p))r.push({f,iv:((p-ROOT+12)%12)});}return r;});
+  const out=[];
+  function go(idx,chosen,lo,hi){
+    if(idx===strArr.length){
+      if(hi-lo>4)return;
+      const cov=new Set(chosen.map((x,i)=>((OPEN[strArr[i]]+x.f)%12+12)%12));
+      if(chordIvs.every(ci=>cov.has(((ROOT+ci)%12+12)%12)))
+        out.push(chosen.map((x,i)=>({s:strArr[i],f:x.f,iv:x.iv})));
+      return;
+    }
+    for(const opt of opts[idx]){
+      const nlo=Math.min(lo,opt.f),nhi=Math.max(hi,opt.f);
+      if(nhi-nlo<=4)go(idx+1,[...chosen,opt],nlo,nhi);
+    }
+  }
+  go(0,[],999,-999);
+  return out;
+}
+function buildFilterBar(){
+  const bar=document.getElementById('filterBar');
+  bar.innerHTML='<span class="cfl">Akkord-Filter:</span>';
+  TRIADS[MODE].forEach((t,i)=>{
+    const cn=nn(ROOT+t.rootIv,ROOT)+t.suf;
+    const col=CHEX[t.col];
+    const pill=document.createElement('div');
+    pill.className='cfp'+(ACT_CHORDS.has(i)?' on':'');
+    pill.style.borderColor=col; pill.style.color=col;
+    pill.innerHTML=`
+      <span class="cfd" style="background:${col}"></span>
+      <span style="cursor:pointer" onclick="toggleChord(${i})">${cn}</span>
+      <span class="cfg" style="cursor:pointer" onclick="toggleChord(${i})">${t.deg}</span>
+      <select class="cfp-sel" onchange="setChordType(${i},this.value)" onclick="event.stopPropagation()" style="color:${col};background:var(--surface);">${chordTypeOptions(i)}</select>
+    `;
+    // clicking the pill border area (not the select) toggles chord
+    pill.onclick=(e)=>{if(e.target.tagName!=='SELECT'&&e.target.tagName!=='OPTION')toggleChord(i);};
+    bar.appendChild(pill);
+  });
+}
+function render(){
+  const shapes=MODE==='minor'?SH_MINOR:SH_MAJOR;
+  const triads=TRIADS[MODE];
+  const scaleSet=new Set(SCALE[MODE]);
+  const pentaSet=new Set(PENTA[MODE]);
+  const ivn=IVNAME[MODE];
+  renderLegend(triads);
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+  shapes.forEach(shape=>{
+    // For major mode the shapes are physically identical to the relative minor
+    // (e.g. C major penta = A minor penta). Anchor on the relative minor root,
+    // which is 3 semitones below the major root.
+    const anchorRoot = MODE==='major' ? ROOT-3 : ROOT;
+    let rfe=((anchorRoot-OPEN[0])%12+12)%12;
+    if(rfe===0)rfe=12;
+    const nm={};
+    for(const n of shape.notes){
+      const af=rfe+n.f;if(af<0)continue;
+      const pitch=((OPEN[n.s]+af)%12+12)%12;
+      const iv=((pitch-ROOT+12)%12);
+      if(!scaleSet.has(iv))continue;
+      nm[`${n.s}-${af}`]={s:n.s,f:af,iv,p:pentaSet.has(iv),isRoot:iv===0};
+    }
+    const afs=Object.values(nm).map(x=>x.f);
+    if(!afs.length)return;
+    for(let s=0;s<6;s++){
+      const sf=shape.notes.filter(n=>n.s===s).map(n=>rfe+n.f).filter(f=>f>0);
+      if(!sf.length)continue;
+      for(let f=Math.min(...sf)-1;f<=Math.max(...sf)+1;f++){
+        if(f<1)continue;
+        const k=`${s}-${f}`;if(nm[k])continue;
+        const pitch=((OPEN[s]+f)%12+12)%12;
+        const iv=((pitch-ROOT+12)%12);
+        if(scaleSet.has(iv))nm[k]={s,f,iv,p:pentaSet.has(iv),isRoot:iv===0};
+      }
+    }
+    for(const nd of Object.values(nm)){
+      nd.chords=triads.map((_,ti)=>ti).filter(ti=>triads[ti].ivs.some(ci=>((ci%12+12)%12)===nd.iv));
+    }
+    const fMin=Math.max(1,Math.min(...Object.values(nm).map(x=>x.f)));
+    const fMax=Math.max(...Object.values(nm).map(x=>x.f));
+    const allV=[];const vseen=new Set();
+    triads.forEach((t,ti)=>{
+      const type=CHORD_TYPES[ti]||'triad';
+      const chordIvs=getChordIvs(t,type);
+      const strArrays=['triad','sus2','sus4','7no5'].includes(type)
+        ? Object.entries(SETS).filter(([k])=>ACT_SETS.has(k)).map(([sn,sa])=>({sn,sa}))
+        : getExtendedStrArrays(type).map((sa,i)=>({sn:'ext'+i,sa}));
+      for(const {sn,sa} of strArrays){
+        const candidates=[];
+        for(const v of findVoicings(chordIvs,sa,fMin,fMax)){
+          const inW=v.filter(nd=>nd.f>=fMin&&nd.f<=fMax+1).length>=2;if(!inW)continue;
+          candidates.push(v);
+        }
+        if(!candidates.length) continue;
+        // Pick best voicing: 1) smallest fret span, 2) closest to shape window center
+        const center=(fMin+fMax)/2;
+        candidates.sort((a,b)=>{
+          const spanA=Math.max(...a.map(n=>n.f))-Math.min(...a.map(n=>n.f));
+          const spanB=Math.max(...b.map(n=>n.f))-Math.min(...b.map(n=>n.f));
+          if(spanA!==spanB) return spanA-spanB;
+          const midA=a.reduce((s,n)=>s+n.f,0)/a.length;
+          const midB=b.reduce((s,n)=>s+n.f,0)/b.length;
+          return Math.abs(midA-center)-Math.abs(midB-center);
+        });
+        const v=candidates[0];
+        const k=ti+'-'+sn+'-'+v.map(n=>n.s+':'+n.f).join(',');
+        if(vseen.has(k))continue;vseen.add(k);
+        for(const vn of v){
+          const nk=`${vn.s}-${vn.f}`;
+          if(!nm[nk]&&vn.f>=fMin-1&&vn.f<=fMax+2){
+            nm[nk]={s:vn.s,f:vn.f,iv:vn.iv,p:pentaSet.has(vn.iv),isRoot:vn.iv===0};
+            nm[nk].chords=triads.map((_,ti2)=>ti2).filter(ti2=>triads[ti2].ivs.some(ci=>((ci%12+12)%12)===vn.iv));
+          }
+        }
+        allV.push({ti,sn,notes:v});
+      }
+    });
+    const fMinR=fMin;
+    const fMaxR=fMax;
+    const card=document.createElement('div');card.className='card';
+    card.innerHTML=`<div class="ch"><span class="ct">${shape.name}</span><span class="cp">Pos. ${rfe}</span></div>`;
+    const fbw=document.createElement('div');fbw.className='fbw';
+    const fn=document.createElement('div');fn.className='fn';
+    fn.innerHTML='<div style="height:19px"></div>';
+    for(let f=fMinR;f<=fMaxR;f++)fn.innerHTML+=`<div class="fi">${f}</div>`;
+    fbw.appendChild(fn);
+    const fb=document.createElement('div');fb.className='fb';
+    for(let s=0;s<6;s++){
+      const col=document.createElement('div');col.className='sc';
+      col.innerHTML=`<div class="sn">${SNAMES[s]}</div>`;
+      for(let f=fMinR;f<=fMaxR;f++){
+        const cell=document.createElement('div');
+        cell.className='fc'+(f===rfe?' nut':'');
+        const nd=nm[`${s}-${f}`];
+        if(nd){
+          const isExt=!nd.p&&!nd.isRoot;
+          if(isExt&&!SHOW_EXT){col.appendChild(cell);continue;}
+          // A note is "in a voicing" if it appears in an active voicing's notes list.
+          // This correctly handles extended chord types where getChordIvs() changed the tones.
+          const myVoicing=allV.find(v=>ACT_CHORDS.has(v.ti)&&v.notes.some(vn=>vn.s===s&&vn.f===f));
+          const isTriadMode=(CHORD_TYPES[nd.chords[0]]||'triad')==='triad';
+          const inActChord=isTriadMode&&nd.chords.some(ci=>ACT_CHORDS.has(ci));
+          const lbl=LABEL==='note'?nn(ROOT+nd.iv,ROOT):(ivn[nd.iv]??nd.iv);
+          const tip=`${nn(ROOT+nd.iv,ROOT)} · ${ivn[nd.iv]??nd.iv} · ${nd.chords.map(ci=>nn(ROOT+triads[ci].rootIv,ROOT)+triads[ci].suf+'('+triads[ci].deg+')').join(', ')||'–'}`;
+          const dot=document.createElement('div');dot.title=tip;dot.textContent=lbl;
+          if(nd.isRoot){
+            dot.className='dot root';
+            if(myVoicing)dot.style.boxShadow=`0 0 0 2px ${CHEX[triads[myVoicing.ti].col]}`;
+          }else if(myVoicing){
+            const col2=CHEX[triads[myVoicing.ti].col];dot.className='dot';
+            dot.style.cssText=`border-width:2px;border-style:solid;border-color:${col2};color:${col2};background:${col2}22;`;
+          }else if(inActChord&&ACT_CHORDS.size>0){
+            const ci=nd.chords.find(ci=>ACT_CHORDS.has(ci));
+            const col2=CHEX[triads[ci].col];dot.className='dot';
+            dot.style.cssText=`border-width:1.5px;border-style:solid;border-color:${col2}55;color:${col2}77;background:${col2}0e;`;
+          }else if(nd.p){dot.className='dot penta';}else{dot.className='dot ext';}
+          cell.appendChild(dot);
+        }
+        col.appendChild(cell);
+      }
+      fb.appendChild(col);
+    }
+    const CW=38,CH=36,NH=19;
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('width',6*CW);svg.setAttribute('height',NH+(fMaxR-fMinR+1)*CH);
+    svg.style.cssText='position:absolute;top:0;left:0;pointer-events:none;z-index:5;overflow:visible';
+    const lseen=new Set();
+    for(const v of allV){
+      if(!ACT_CHORDS.has(v.ti))continue;
+      const col2=CHEX[triads[v.ti].col];
+      const pts=v.notes.map(n=>({x:n.s*CW+CW/2,y:NH+(n.f-fMinR)*CH+CH/2}));
+      for(let i=0;i<pts.length-1;i++){
+        const lk=`${pts[i].x},${pts[i].y}-${pts[i+1].x},${pts[i+1].y}`;
+        if(lseen.has(lk))continue;lseen.add(lk);
+        const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+        ln.setAttribute('x1',pts[i].x);ln.setAttribute('y1',pts[i].y);
+        ln.setAttribute('x2',pts[i+1].x);ln.setAttribute('y2',pts[i+1].y);
+        ln.setAttribute('stroke',col2);ln.setAttribute('stroke-width','1.5');
+        ln.setAttribute('stroke-dasharray','3,2');ln.setAttribute('opacity','0.7');
+        svg.appendChild(ln);
+      }
+    }
+    fb.appendChild(svg);fbw.appendChild(fb);card.appendChild(fbw);grid.appendChild(card);
+  });
+}
+function renderLegend(triads){
+  const leg=document.getElementById('legend');
+  leg.innerHTML=`<div class="lt">${nn(ROOT,ROOT)} ${MODE==='minor'?'Moll':'Dur'}</div>`;
+  leg.innerHTML+=`<div style="font-size:.58rem;color:var(--muted);margin-bottom:7px;text-transform:uppercase;letter-spacing:.09em">Punkte</div>`;
+  [
+    {bg:'var(--root-bg)',bc:'var(--root-bg)',fc:'var(--root-fg)',label:'Grundton (Root)'},
+    {bg:'var(--penta-bg)',bc:'var(--penta-bc)',fc:'var(--penta-fg)',label:'Pentatonik'},
+    {bg:'transparent',bc:'var(--ext-bc)',fc:'var(--ext-fg)',label:'Skala (Erw.)',dash:true},
+    {bg:'#5c9de020',bc:'#5c9de0',fc:'#5c9de0',label:'Triad-Ton (aktiv)'},
+  ].forEach(d=>{
+    leg.innerHTML+=`<div class="li"><div class="lsw" style="background:${d.bg};border-color:${d.bc};border-style:${d.dash?'dashed':'solid'}"></div><span style="font-size:.64rem;color:${d.fc}">${d.label}</span></div>`;
+  });
+  leg.innerHTML+='<div class="lsep"></div>';
+  leg.innerHTML+=`<div style="font-size:.58rem;color:var(--muted);margin-bottom:7px;text-transform:uppercase;letter-spacing:.09em">Akkorde (klickbar)</div>`;
+  triads.forEach((t,i)=>{
+    const cn=nn(ROOT+t.rootIv,ROOT)+t.suf;const col=CHEX[t.col];
+    leg.innerHTML+=`<div class="li"><div class="lsw" style="background:${col}1a;border-color:${col}"></div><span style="color:${col};font-size:.66rem">${cn}</span><span style="color:var(--muted);font-size:.56rem;margin-left:3px">${t.deg}</span></div>`;
+  });
+  leg.innerHTML+=`<div class="lsep"></div><div class="lnote">Akkord-Filter oben anklicken → Voicings filtern.<br>Mehrere gleichzeitig möglich.<br><br>Gestrichelte Linien = Voicings auf dem jeweiligen String-Set.</div>`;
+}
+buildFilterBar();render();
+</script>
+</body>
+</html>
