@@ -5,48 +5,48 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pentatonic Triad Map</title>
 <style>
-:root{--bg:#111318;--surface:#181b22;--surface2:#1e2229;--border:#2a2f3a;--border2:#353c4a;--ink:#e8eaf0;--muted:#6b7280;--muted2:#3a4050;--root-bg:#e8d87a;--root-fg:#111318;--penta-bg:#1e2840;--penta-fg:#8aa0c8;--penta-bc:#3a5070;--ext-fg:#2e3548;--ext-bc:#252c3a;--c0:#e05c5c;--c1:#aaaaaa;--c2:#5c9de0;--c3:#5cc08a;--c4:#e0a05c;--c5:#b05ce0;--c6:#5cd4e0;}
+:root{--bg:#111318;--surface:#181b22;--surface2:#1e2229;--border:#2a2f3a;--border2:#353c4a;--ink:#e8eaf0;--muted:#6b7280;--muted2:#3a4050;--root-bg:#e8d87a;--root-fg:#111318;--penta-bg:#1e2840;--penta-fg:#8aa0c8;--penta-bc:#3a5070;--ext-fg:#2e3548;--ext-bc:#252c3a;--c0:#e05c5c;--c1:#aaaaaa;--c2:#5c9de0;--c3:#5cc08a;--c4:#e0a05c;--c5:#b05ce0;--c6:#5cd4e0;
+--cw:38px;--ch:36px;--nh:19px;}
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--ink);font-family:'DM Mono',monospace;min-height:100vh;padding:22px 16px 60px;}
+body{background:var(--bg);color:var(--ink);font-family:'Courier New',Courier,monospace;min-height:100vh;padding:22px 16px 60px;}
 header{margin-bottom:20px;}
-h1{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(1.4rem,3vw,2rem);letter-spacing:-0.01em;color:var(--ink);line-height:1;margin-bottom:3px;}
+h1{font-family:Georgia,'Times New Roman',serif;font-weight:900;font-size:clamp(1.4rem,3vw,2rem);letter-spacing:-0.01em;color:var(--ink);line-height:1;margin-bottom:3px;}
 .sub{font-size:0.6rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;}
 .controls{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px;align-items:flex-end;border-bottom:1px solid var(--border);padding-bottom:14px;}
 .cg{display:flex;flex-direction:column;gap:4px;}
 .cg label{font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;}
-select{background:var(--surface);border:1px solid var(--border2);color:var(--ink);font-family:'DM Mono',monospace;font-size:.76rem;padding:5px 26px 5px 9px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M0 0l4.5 5 4.5-5z' fill='%236b7280'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
+select{background:var(--surface);border:1px solid var(--border2);color:var(--ink);font-family:'Courier New',Courier,monospace;font-size:.76rem;padding:5px 26px 5px 9px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M0 0l4.5 5 4.5-5z' fill='%236b7280'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
 select:focus{outline:none;}
 .trow{display:flex;}
-.tbtn{background:var(--surface);border:1px solid var(--border2);border-right:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:.7rem;padding:5px 12px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.tbtn{background:var(--surface);border:1px solid var(--border2);border-right:none;color:var(--muted);font-family:'Courier New',Courier,monospace;font-size:.7rem;padding:5px 12px;cursor:pointer;transition:all .15s;white-space:nowrap;}
 .tbtn:last-child{border-right:1px solid var(--border2);}
 .tbtn.on{background:var(--surface2);color:var(--ink);}
 .tbtn:hover{color:var(--ink);}
 .cfbar{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px;align-items:center;}
 .cfl{font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-right:2px;align-self:center;flex-shrink:0;}
-.cfp{font-size:.66rem;padding:3px 10px 3px 8px;border:1.5px solid;border-radius:20px;cursor:pointer;transition:all .15s;user-select:none;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:4px;opacity:.3;background:transparent;}
+.cfp{font-size:.66rem;padding:3px 10px 3px 8px;border:1.5px solid;border-radius:20px;cursor:pointer;transition:all .15s;user-select:none;font-family:'Courier New',Courier,monospace;display:flex;align-items:center;gap:4px;opacity:.3;background:transparent;}
 .cfp.on{opacity:1;}
 .cfp:hover{opacity:.65;}
 .cfp.on:hover{opacity:1;}
 .cfd{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
 .cfg{font-size:.54rem;opacity:.7;}
-/* per-pill chord type selector */
 .cfp-wrap{display:flex;align-items:center;gap:3px;}
-.cfp-sel{background:transparent;border:none;color:inherit;font-family:'DM Mono',monospace;font-size:.58rem;cursor:pointer;padding:1px 2px;appearance:none;opacity:.7;outline:none;min-width:0;max-width:56px;text-overflow:ellipsis;}
+.cfp-sel{background:transparent;border:none;color:inherit;font-family:'Courier New',Courier,monospace;font-size:.58rem;cursor:pointer;padding:1px 2px;appearance:none;opacity:.7;outline:none;min-width:0;max-width:56px;text-overflow:ellipsis;}
 .cfp.on .cfp-sel{opacity:1;}
 .cfp-sel:hover{opacity:1;}
 .page-body{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;}
 .shapes-grid{display:flex;gap:14px;flex-wrap:wrap;flex:1;min-width:0;}
 .card{background:var(--surface);border:1px solid var(--border);padding:11px 11px 13px;flex-shrink:0;}
 .ch{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid var(--border);}
-.ct{font-family:'Playfair Display',serif;font-weight:700;font-size:.9rem;color:var(--ink);}
+.ct{font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:.9rem;color:var(--ink);}
 .cp{font-size:.58rem;color:var(--muted);}
 .fbw{display:flex;}
-.fn{display:flex;flex-direction:column;padding-top:19px;margin-right:4px;flex-shrink:0;}
-.fi{height:36px;display:flex;align-items:center;justify-content:flex-end;font-size:.53rem;color:var(--muted2);width:17px;line-height:1;}
+.fn{display:flex;flex-direction:column;padding-top:var(--nh);margin-right:4px;flex-shrink:0;}
+.fi{height:var(--ch);display:flex;align-items:center;justify-content:flex-end;font-size:.53rem;color:var(--muted2);width:17px;line-height:1;}
 .fb{display:flex;position:relative;}
-.sc{display:flex;flex-direction:column;align-items:center;width:38px;flex-shrink:0;}
-.sn{font-size:.58rem;color:var(--muted);height:19px;display:flex;align-items:center;font-style:italic;}
-.fc{width:38px;height:36px;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;}
+.sc{display:flex;flex-direction:column;align-items:center;width:var(--cw);flex-shrink:0;}
+.sn{font-size:.58rem;color:var(--muted);height:var(--nh);display:flex;align-items:center;font-style:italic;}
+.fc{width:var(--cw);height:var(--ch);display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;}
 .fc::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:var(--border);}
 .fc.nut::before{height:2px;background:#505060;}
 .fc::after{content:'';position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--border2);transform:translateX(-50%);}
@@ -56,18 +56,22 @@ select:focus{outline:none;}
 .dot.penta{background:var(--penta-bg);color:var(--penta-fg);border-color:var(--penta-bc);}
 .dot.ext{background:transparent;color:var(--ext-fg);border-color:var(--ext-bc);border-style:dashed;}
 .legend{background:var(--surface);border:1px solid var(--border);padding:13px;min-width:175px;flex-shrink:0;font-size:.66rem;}
-.lt{font-family:'Playfair Display',serif;font-weight:700;font-size:.82rem;margin-bottom:9px;color:var(--ink);}
+.lt{font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:.82rem;margin-bottom:9px;color:var(--ink);}
 .lsep{height:1px;background:var(--border);margin:9px 0;}
 .li{display:flex;align-items:center;gap:7px;margin-bottom:6px;}
 .lsw{width:16px;height:16px;border-radius:50%;flex-shrink:0;border:1.5px solid;}
 .lnote{font-size:.58rem;color:var(--muted);line-height:1.7;margin-top:4px;}
-@media(max-width:480px){.sc{width:34px;}.fc{width:34px;height:34px;}.dot{width:22px;height:22px;font-size:.5rem;}}
+@media(max-width:480px){
+  :root{--cw:32px;--ch:30px;--nh:16px;}
+  .dot{width:20px;height:20px;font-size:.46rem;}
+  .fi{width:14px;font-size:.48rem;}
+}
 </style>
 </head>
 <body>
 <header>
   <h1>Pentatonic Triad Map</h1>
-  <p class="sub">5 Box-Shapes · Alle 7 diatonischen Akkorde · ADG · DGB · GBe</p>
+  <p class="sub">5 Box-Shapes · Alle 7 diatonischen Akkorde · EAD · ADG · DGB · GBe</p>
 </header>
 <div class="controls">
   <div class="cg"><label>Grundton</label>
@@ -92,6 +96,7 @@ select:focus{outline:none;}
   </div>
   <div class="cg"><label>String-Sets</label>
     <div class="trow">
+      <button class="tbtn on" id="tsEAD" onclick="toggleSet('EAD')">EAD</button>
       <button class="tbtn on" id="tsADG" onclick="toggleSet('ADG')">ADG</button>
       <button class="tbtn on" id="tsDGB" onclick="toggleSet('DGB')">DGB</button>
       <button class="tbtn on" id="tsGBe" onclick="toggleSet('GBe')">GBe</button>
@@ -139,7 +144,7 @@ const TRIADS={
   ]
 };
 const CHEX=['#e05c5c','#aaaaaa','#5c9de0','#5cc08a','#e0a05c','#b05ce0','#5cd4e0'];
-const SETS={ADG:[1,2,3],DGB:[2,3,4],GBe:[3,4,5]};
+const SETS={EAD:[0,1,2],ADG:[1,2,3],DGB:[2,3,4],GBe:[3,4,5]};
 const SH_MINOR=[
   {name:'Shape 1',tag:'I',notes:[{s:0,f:0,iv:0,p:1},{s:0,f:3,iv:3,p:1},{s:1,f:0,iv:5,p:1},{s:1,f:2,iv:7,p:1},{s:2,f:0,iv:10,p:1},{s:2,f:2,iv:0,p:1},{s:3,f:0,iv:3,p:1},{s:3,f:2,iv:5,p:1},{s:4,f:0,iv:7,p:1},{s:4,f:3,iv:10,p:1},{s:5,f:0,iv:0,p:1},{s:5,f:3,iv:3,p:1}]},
   {name:'Shape 2',tag:'II',notes:[{s:0,f:3,iv:3,p:1},{s:0,f:5,iv:5,p:1},{s:1,f:2,iv:7,p:1},{s:1,f:5,iv:10,p:1},{s:2,f:2,iv:0,p:1},{s:2,f:5,iv:3,p:1},{s:3,f:2,iv:5,p:1},{s:3,f:4,iv:7,p:1},{s:4,f:3,iv:10,p:1},{s:4,f:5,iv:0,p:1},{s:5,f:3,iv:3,p:1},{s:5,f:5,iv:5,p:1}]},
@@ -153,7 +158,7 @@ const SH_MINOR=[
 // which keeps the same physical finger patterns on the neck.
 const SH_MAJOR=SH_MINOR;
 let ROOT=9,MODE='minor',LABEL='note',SHOW_EXT=true;
-let ACT_SETS=new Set(['ADG','DGB','GBe']);
+let ACT_SETS=new Set(['EAD','ADG','DGB','GBe']);
 let ACT_CHORDS=new Set();
 // Per-chord type: index matches TRIADS[MODE] index. Reset on mode/root change.
 let CHORD_TYPES=Array(7).fill('triad');
@@ -233,7 +238,7 @@ function chordStrings(type){
 // Build combined string array from active sets for extended voicings.
 // For 4-note chords use pairs of adjacent sets, for 5-note use triples.
 function getExtendedStrArrays(type){
-  const setOrder=['ADG','DGB','GBe'];
+  const setOrder=['EAD','ADG','DGB','GBe'];
   const active=setOrder.filter(s=>ACT_SETS.has(s));
   const need=chordStrings(type);
   if(need<=3) return Object.entries(SETS).filter(([k])=>ACT_SETS.has(k)).map(([,v])=>v);
@@ -423,7 +428,16 @@ function render(){
       }
       fb.appendChild(col);
     }
-    const CW=38,CH=36,NH=19;
+    // Append to DOM first so offsetWidth/Height are available for measurement
+    fbw.appendChild(fb);card.appendChild(fbw);grid.appendChild(card);
+
+    // Now measure actual rendered cell dimensions for pixel-accurate SVG lines
+    const sampleCell=fb.querySelector('.fc');
+    const CW=sampleCell?sampleCell.offsetWidth:38;
+    const CH=sampleCell?sampleCell.offsetHeight:36;
+    const sampleSn=fb.querySelector('.sn');
+    const NH=sampleSn?sampleSn.offsetHeight:19;
+
     const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
     svg.setAttribute('width',6*CW);svg.setAttribute('height',NH+(fMaxR-fMinR+1)*CH);
     svg.style.cssText='position:absolute;top:0;left:0;pointer-events:none;z-index:5;overflow:visible';
@@ -443,7 +457,7 @@ function render(){
         svg.appendChild(ln);
       }
     }
-    fb.appendChild(svg);fbw.appendChild(fb);card.appendChild(fbw);grid.appendChild(card);
+    fb.appendChild(svg);
   });
 }
 function renderLegend(triads){
