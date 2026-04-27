@@ -61,6 +61,18 @@ select:focus{outline:none;}
 .li{display:flex;align-items:center;gap:7px;margin-bottom:6px;}
 .lsw{width:16px;height:16px;border-radius:50%;flex-shrink:0;border:1.5px solid;}
 .lnote{font-size:.58rem;color:var(--muted);line-height:1.7;margin-top:4px;}
+/* tempo slider */
+.tempo-wrap{display:flex;align-items:center;gap:8px;}
+.tempo-wrap input[type=range]{-webkit-appearance:none;appearance:none;width:90px;height:3px;background:var(--border2);border-radius:2px;outline:none;cursor:pointer;}
+.tempo-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--ink);cursor:pointer;}
+.tempo-wrap input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--ink);border:none;cursor:pointer;}
+.tempo-lbl{font-size:.6rem;color:var(--muted);white-space:nowrap;min-width:32px;}
+.playbtn{background:var(--surface);border:1px solid var(--border2);color:var(--muted);font-family:'Courier New',Courier,monospace;font-size:.7rem;padding:5px 14px;cursor:pointer;transition:all .15s;white-space:nowrap;border-radius:2px;}
+.playbtn.playing{background:#1e3020;border-color:#5cc08a;color:#5cc08a;}
+.playbtn:hover{color:var(--ink);}
+/* blink pulse animation */
+@keyframes blinkpulse{0%{opacity:.28}15%{opacity:1}85%{opacity:1}100%{opacity:.28}}
+.cfp.blinking{animation:blinkpulse 1s ease-in-out;}
 @media(max-width:480px){
   :root{--cw:32px;--ch:30px;--nh:16px;}
   .dot{width:20px;height:20px;font-size:.46rem;}
@@ -106,6 +118,20 @@ select:focus{outline:none;}
     <div class="trow">
       <button class="tbtn on" id="extBtn" onclick="toggleExt()">+ Skala</button>
     </div>
+  </div>
+  <div class="cg"><label>Akkordfolge</label>
+    <select id="presetSel" onchange="applyPreset(this.value)">
+      <option value="">– Preset –</option>
+    </select>
+  </div>
+  <div class="cg"><label>Tempo</label>
+    <div class="tempo-wrap">
+      <input type="range" id="tempoSlider" min="250" max="3000" step="250" value="1000" oninput="setTempo(this.value)">
+      <span class="tempo-lbl" id="tempoLbl">1.0s</span>
+    </div>
+  </div>
+  <div class="cg"><label>Blink</label>
+    <button class="playbtn" id="playBtn" onclick="togglePlay()">▶ Play</button>
   </div>
 </div>
 <div class="cfbar" id="filterBar"></div>
@@ -163,13 +189,129 @@ let ACT_CHORDS=new Set();
 // Per-chord type: index matches TRIADS[MODE] index. Reset on mode/root change.
 let CHORD_TYPES=Array(7).fill('triad');
 
-function setMode(m){MODE=m;document.getElementById('minBtn').classList.toggle('on',m==='minor');document.getElementById('majBtn').classList.toggle('on',m==='major');ACT_CHORDS=new Set();CHORD_TYPES=Array(7).fill('triad');buildFilterBar();render();}
-function setLabel(l){LABEL=l;document.getElementById('noteBtn').classList.toggle('on',l==='note');document.getElementById('ivBtn').classList.toggle('on',l==='iv');render();}
+// ── PRESETS ─────────────────────────────────────────────────────────────
+// Each preset: { label, degrees[] }
+// degrees = array of rootIv values matching TRIADS[mode] entries, in play order
+const PRESETS={
+  minor:[
+    {label:'i – VII – VI – VII',     degrees:[0,10,8,10]},
+    {label:'i – iv – v',             degrees:[0,5,7]},
+    {label:'i – VI – III – VII',     degrees:[0,8,3,10]},
+    {label:'i – iv – VII – III',     degrees:[0,5,10,3]},
+    {label:'i – III – VII – iv',     degrees:[0,3,10,5]},
+    {label:'i – v – VI – VII',       degrees:[0,7,8,10]},
+    {label:'i – ii° – v – i',        degrees:[0,2,7,0]},
+    {label:'Andalusisch i–VII–VI–V', degrees:[0,10,8,7]},
+    {label:'i – VI – VII',           degrees:[0,8,10]},
+    {label:'i – iv – i – v',         degrees:[0,5,0,7]},
+  ],
+  major:[
+    {label:'I – V – vi – IV',        degrees:[0,7,9,5]},
+    {label:'I – IV – V',             degrees:[0,5,7]},
+    {label:'I – vi – IV – V',        degrees:[0,9,5,7]},
+    {label:'ii – V – I',             degrees:[2,7,0]},
+    {label:'I – IV – vi – V',        degrees:[0,5,9,7]},
+    {label:'I – V – vi – iii – IV',  degrees:[0,7,9,4,5]},
+    {label:'vi – IV – I – V',        degrees:[9,5,0,7]},
+    {label:'I – iii – IV – V',       degrees:[0,4,5,7]},
+    {label:'I – IV – I – V',         degrees:[0,5,0,7]},
+    {label:'I – ii – V – I',         degrees:[0,2,7,0]},
+  ]
+};
+
+// Blink state
+let blinkTimer=null;
+let blinkSequence=[];  // set by applyPreset; empty = use manual selection
+let blinkPos=0;
+let blinkTempo=1000;   // ms per step
+
+function setTempo(v){
+  blinkTempo=parseInt(v);
+  document.getElementById('tempoLbl').textContent=(blinkTempo/1000).toFixed(2).replace(/\.?0+$/,'')+'s';
+  // Restart timer with new tempo if playing
+  if(blinkTimer){clearInterval(blinkTimer);blinkTimer=setInterval(blinkStep,blinkTempo);}
+}
+
+function applyPreset(val){
+  stopPlay();
+  if(!val){blinkSequence=[];ACT_CHORDS=new Set();buildFilterBar();render();return;}
+  const preset=PRESETS[MODE].find(p=>p.label===val);
+  if(!preset) return;
+  const triads=TRIADS[MODE];
+  // Full sequence with repeats for blink playback
+  blinkSequence=preset.degrees.map(deg=>triads.findIndex(t=>t.rootIv===deg)).filter(i=>i>=0);
+  // Activate unique chords in filter
+  ACT_CHORDS=new Set(blinkSequence);
+  buildFilterBar();render();
+}
+
+function togglePlay(){
+  if(blinkTimer) stopPlay();
+  else startPlay();
+}
+
+function startPlay(){
+  // Compute sequence fresh at play-time:
+  // If a preset is loaded use it, otherwise use the currently active chords in index order
+  const seq=blinkSequence.length>0
+    ? blinkSequence
+    : [...ACT_CHORDS].sort((a,b)=>a-b);
+  if(seq.length===0) return;
+  // Store snapshot so mid-play manual changes don't corrupt sequence
+  blinkSequence=seq;
+  blinkPos=0;
+  const btn=document.getElementById('playBtn');
+  btn.textContent='◼ Stop';btn.classList.add('playing');
+  blinkStep();
+  blinkTimer=setInterval(blinkStep,blinkTempo);
+}
+
+function stopPlay(){
+  if(blinkTimer){clearInterval(blinkTimer);blinkTimer=null;}
+  blinkPos=0;
+  const btn=document.getElementById('playBtn');
+  btn.textContent='▶ Play';btn.classList.remove('playing');
+  // Restore all preset chords (or manual selection) as active
+  if(blinkSequence.length>0) ACT_CHORDS=new Set(blinkSequence);
+  buildFilterBar();render();
+}
+
+function blinkStep(){
+  const seq=blinkSequence;
+  const idx=seq[blinkPos%seq.length];
+  ACT_CHORDS=new Set([idx]);
+  // Preserve scroll position — render() rebuilds DOM which would reset scroll
+  const scrollY=window.scrollY;
+  buildFilterBar();render();
+  window.scrollTo({top:scrollY,behavior:'instant'});
+  const pills=document.querySelectorAll('.cfp');
+  if(pills[idx]){
+    pills[idx].classList.remove('blinking');
+    void pills[idx].offsetWidth;
+    pills[idx].classList.add('blinking');
+  }
+  blinkPos++;
+}
+
+function buildPresetSelect(){
+  const sel=document.getElementById('presetSel');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">– Preset –</option>';
+  PRESETS[MODE].forEach(p=>{
+    const o=document.createElement('option');
+    o.value=p.label;o.textContent=p.label;
+    if(p.label===cur)o.selected=true;
+    sel.appendChild(o);
+  });
+}
+
+function setMode(m){MODE=m;document.getElementById('minBtn').classList.toggle('on',m==='minor');document.getElementById('majBtn').classList.toggle('on',m==='major');ACT_CHORDS=new Set();CHORD_TYPES=Array(7).fill('triad');blinkSequence=[];stopPlay();buildPresetSelect();buildFilterBar();render();}
+function setLabel(l){LABEL=l;document.getElementById('noteBtn').classList.toggle('on',l==='note');document.getElementById('ivBtn').classList.toggle('on',l==='iv');buildFilterBar();render();}
 function toggleSet(n){ACT_SETS.has(n)?ACT_SETS.delete(n):ACT_SETS.add(n);document.getElementById('ts'+n).classList.toggle('on',ACT_SETS.has(n));updatePillSelects();render();}
 function toggleExt(){SHOW_EXT=!SHOW_EXT;const b=document.getElementById('extBtn');b.textContent=SHOW_EXT?'+ Skala':'– Skala';b.classList.toggle('on',SHOW_EXT);render();}
 function setChordType(i,v){CHORD_TYPES[i]=v;render();}
 function toggleChord(i){ACT_CHORDS.has(i)?ACT_CHORDS.delete(i):ACT_CHORDS.add(i);document.querySelectorAll('.cfp')[i].classList.toggle('on',ACT_CHORDS.has(i));render();}
-document.getElementById('rootSel').addEventListener('change',e=>{ROOT=parseInt(e.target.value);ACT_CHORDS=new Set();CHORD_TYPES=Array(7).fill('triad');buildFilterBar();render();});
+document.getElementById('rootSel').addEventListener('change',e=>{ROOT=parseInt(e.target.value);ACT_CHORDS=new Set();CHORD_TYPES=Array(7).fill('triad');blinkSequence=[];stopPlay();buildPresetSelect();buildFilterBar();render();});
 
 // Update disabled state on all pill selects when set count changes
 function updatePillSelects(){
@@ -293,13 +435,21 @@ function buildFilterBar(){
     const pill=document.createElement('div');
     pill.className='cfp'+(ACT_CHORDS.has(i)?' on':'');
     pill.style.borderColor=col; pill.style.color=col;
+    // In note-mode: name is prominent, degree is small/dimmed.
+    // In iv-mode: degree is prominent, name is small/dimmed — styles swap.
+    const nameStyle= LABEL==='iv' ? 'font-size:.54rem;opacity:.7;' : '';
+    const degStyle = LABEL==='iv' ? 'font-size:.66rem;opacity:1;'  : 'font-size:.54rem;opacity:.7;';
+    const nameSpan=`<span style="${nameStyle}">${cn}</span>`;
+    const degSpan =`<span style="${degStyle}">${t.deg}</span>`;
+    const label=LABEL==='iv'
+      ? `${degSpan}${nameSpan}`
+      : `${nameSpan}${degSpan}`;
     pill.innerHTML=`
       <span class="cfd" style="background:${col}"></span>
-      <span style="cursor:pointer" onclick="toggleChord(${i})">${cn}</span>
-      <span class="cfg" style="cursor:pointer" onclick="toggleChord(${i})">${t.deg}</span>
+      ${label}
       <select class="cfp-sel" onchange="setChordType(${i},this.value)" onclick="event.stopPropagation()" style="color:${col};background:var(--surface);">${chordTypeOptions(i)}</select>
     `;
-    // clicking the pill border area (not the select) toggles chord
+    // Entire pill is clickable except the select element
     pill.onclick=(e)=>{if(e.target.tagName!=='SELECT'&&e.target.tagName!=='OPTION')toggleChord(i);};
     bar.appendChild(pill);
   });
@@ -480,7 +630,7 @@ function renderLegend(triads){
   });
   leg.innerHTML+=`<div class="lsep"></div><div class="lnote">Akkord-Filter oben anklicken → Voicings filtern.<br>Mehrere gleichzeitig möglich.<br><br>Gestrichelte Linien = Voicings auf dem jeweiligen String-Set.</div>`;
 }
-buildFilterBar();render();
+buildPresetSelect();buildFilterBar();render();
 </script>
 </body>
 </html>
